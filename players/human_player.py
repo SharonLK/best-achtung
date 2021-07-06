@@ -14,15 +14,16 @@ class HumanPlayer(Player):
         self.left_key = left_key
         self.right_key = right_key
 
-    def move(self, board: Board, events) -> Action:
-
-        for event in events:
-
-            if event.type == pygame.KEYDOWN:
-
-                if event.key == self.left_key:
-                    return Action.Left
-                if event.key == self.right_key:
-                    return Action.Right
-
+    def move(self, board: Board, keys) -> Action:
+        if keys[self.left_key]:
+            return Action.Left
+        if keys[self.right_key]:
+            return Action.Right
         return Action.Stand
+
+        # for event in events:
+        #     if event.type == pygame.KEYDOWN:
+        #         if event.key == self.left_key:
+        #             return Action.Left
+        #         if event.key == self.right_key:
+        #             return Action.Right

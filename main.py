@@ -5,11 +5,11 @@ import numpy as np
 
 from game import Game
 from players.human_player import HumanPlayer
-from players.random_palyer import RandomPlayer
+from players.random_player import RandomPlayer
+from players.fog_player import FogPlayer
 
-
-radius = 5
-path_radius = 5
+radius = 2
+path_radius = 2
 
 screen_size = (5 * 240, 5 * 180)
 
@@ -20,34 +20,38 @@ p2_path_color = (255, 0, 255)
 
 BLACK = (0, 0, 0)
 
+clock = pygame.time.Clock()
+
 
 def as_int(pos: np.ndarray) -> List[int]:
     return [int(pos[0]), int(pos[1])]
 
 
 def main():
+    play_music()
     pygame.init()
     game = Game()
 
     screen = pygame.display.set_mode(screen_size)
 
-    # player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
-    # player2 = HumanPlayer(game.head1, pygame.K_q, pygame.K_w)
-    player1 = RandomPlayer(game.head1)
-    player2 = RandomPlayer(game.head2)
+    player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
+    player2 = FogPlayer(game.head1)
+    # player1 = RandomPlayer(game.head1)
+    # player2 = RandomPlayer(game.head2)
     empty = False
 
     while not game.has_ended():
+        clock.tick(60)
 
-        events = pygame.event.get()
-
-        for event in events:
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 print('game stopped by user request')
                 game.end()
 
-        action1 = player1.move(game.board, events)
-        action2 = player2.move(game.board, events)
+        keys = pygame.key.get_pressed()
+
+        action1 = player1.move(game.board, keys)
+        action2 = player2.move(game.board, keys)
 
         prev_pos1 = game.head1.pos
         prev_pos2 = game.head2.pos
@@ -74,6 +78,14 @@ def draw_player(color, center, surface):
 def draw_path(path, screen, color):
     for point in path:
         pygame.draw.circle(screen, color, [int(point[0]), int(point[1])], path_radius)
+
+
+def play_music():
+    file = 'harry_potter.mp3'
+    pygame.init()
+    pygame.mixer.init()
+    pygame.mixer.music.load(file)
+    pygame.mixer.music.play(-1)
 
 
 if __name__ == "__main__":
