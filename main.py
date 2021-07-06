@@ -35,7 +35,7 @@ def main():
     screen = pygame.display.set_mode(screen_size)
 
     player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
-    player2 = FogPlayer(game.head1)
+    player2 = HumanPlayer(game.head2, pygame.K_a, pygame.K_s)
     # player1 = RandomPlayer(game.head1)
     # player2 = RandomPlayer(game.head2)
     empty = False
