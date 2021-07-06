@@ -7,14 +7,14 @@ from action import Action
 from board import Board
 from head import Head
 
-speed = 1
+speed = 10
 dtheta = 0.3
 
 radius = 5
 path_radius = 5
 
-cycle_time = 120
-empty_time = 20
+cycle_time = 120 // speed
+empty_time = 20 // speed
 
 screen_size = (800, 600)
 
@@ -46,7 +46,6 @@ class Game:
 
         self.board: Optional[Board] = None
         self.heads: Optional[List[Head]] = None
-        self.loser: Optional[int] = None
         self.screen: Optional = None
         self.empty: Optional[bool] = False
         self.time = 0
@@ -85,20 +84,19 @@ class Game:
             self.heads.append(head)
 
         self.ended = False
-        self.loser = None
         self.empty = False
 
         pygame.init()
         self.screen = pygame.display.set_mode(screen_size)
 
     @staticmethod
-    def _move_head(head: Head, action: Action) -> None:
+    def _move_head(head: Head, action: Action) -> List[np.ndarray]:
         if action == Action.Right:
             head.change_direction(-dtheta)
         elif action == Action.Left:
             head.change_direction(dtheta)
 
-        head.step()
+        return head.step()
 
     def advance(self, action1: Action) -> None:
         self.time += 1
@@ -109,29 +107,23 @@ class Game:
             else:
                 draw_player(color, as_int(head.pos), self.screen)
 
+        visited = []
         for head, color in zip(self.heads, self.marker_colors):
-            self._move_head(head, action1)
+            visited += self._move_head(head, action1)
             draw_player(color, as_int(head.pos), self.screen)
 
         pygame.display.flip()
 
         self.empty = self.time % cycle_time > cycle_time - empty_time
 
-        for idx, head in enumerate(self.heads):
-            if not self.board.legal_pos(head.pos):
-                print(f'Player {idx} has lost')
+        for pos in visited:
+            if not self.board.legal_pos(pos):
+                print(f'Survived for {self.time} turns')
                 self.ended = True
-                self.loser = idx
                 return
 
-        if self.time == 50_000:
-            print('Game has ended after time limit')
-            self.ended = True
-            self.loser = -1
-            return
-
         if not self.empty:
-            self.board.update_occupancy([head.pos for head in self.heads])
+            self.board.update_occupancy(visited)
         else:
             self.board.update_occupancy()
 

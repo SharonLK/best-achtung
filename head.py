@@ -1,9 +1,11 @@
+from typing import List
+
 import numpy as np
 
 
 class Head:
 
-    def __init__(self, pos: np.ndarray, direction: float, speed: float):
+    def __init__(self, pos: np.ndarray, direction: float, speed: int):
         self.pos = pos
         self.direction = direction
         self.speed = speed
@@ -22,9 +24,13 @@ class Head:
     def change_direction(self, change: float) -> None:
         self.direction += change
 
-    def step(self) -> None:
+    def step(self) -> List[np.ndarray]:
 
-        new_x = self.x + self.speed * np.cos(self.direction)
-        new_y = self.y + self.speed * np.sin(self.direction)
+        visited = []
+        for _ in range(self.speed):
+            new_x = self.x + np.cos(self.direction)
+            new_y = self.y + np.sin(self.direction)
+            self.pos = np.array([new_y, new_x])
+            visited.append(self.pos)
 
-        self.pos = np.array([new_y, new_x])
+        return visited

@@ -2,6 +2,8 @@ from typing import Optional, List
 
 import numpy as np
 
+from head import Head
+
 
 class Board:
 
@@ -17,7 +19,7 @@ class Board:
             self.cells[int(pos[0]), int(pos[1])] = 1
 
         for idx in range(1, 3):
-            self.occupancy[idx-1] = self.occupancy[idx]
+            self.occupancy[idx - 1] = self.occupancy[idx]
             self.occupancy[idx] = []
 
         if pos_lst is not None:
@@ -36,3 +38,12 @@ class Board:
 
     def legal_pos(self, pos: np.ndarray) -> bool:
         return not self._border_collision(pos) and not self._path_collision(pos)
+
+    def risks(self, head: Head) -> np.ndarray:
+
+        top_left = np.sum(self.cells[head.pos[0] - 30:head.pos[0], head.pos[1] - 30:head.pos[1]])
+        top_right = np.sum(self.cells[head.pos[0] - 30:head.pos[0], head.pos[1]:head.pos[1] + 30])
+        bottom_right = np.sum(self.cells[head.pos[0]:head.pos[0] + 30, head.pos[1]:head.pos[1] + 30])
+        bottom_left = np.sum(self.cells[head.pos[0]:head.pos[0] + 30, head.pos[1] - 30:head.pos[1]])
+
+        return np.array([top_left, top_right, bottom_right, bottom_left])

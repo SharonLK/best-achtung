@@ -15,10 +15,19 @@ class DefaultEnvironment(gym.Env):
         self.game = Game(1)
 
         self.action_space = gym.spaces.Discrete(3)  # Turn left, Turn right, Continue straight
-        self.observation_space = gym.spaces.Box(low=0, high=1, shape=(800, 600))
+        self.observation_space = gym.spaces.Box(low=0, high=1, shape=(7,))
 
     def _get_observation(self) -> np.ndarray:
-        return pygame.surfarray.array3d(pygame.display.get_surface()).astype(np.uint8)[:, :, 0]
+        risks = self.game.board.risks(self.game.heads[0])
+        return np.ndarray([
+            self.game.heads[0].pos[0] / self.game.board.width,
+            self.game.heads[0].pos[1] / self.game.board.height,
+            self.game.heads[0].direction / (2 * np.pi),
+            risks[0],
+            risks[1],
+            risks[2],
+            risks[3]
+        ])
 
     def step(self, action):
         if action == 0:
@@ -33,10 +42,7 @@ class DefaultEnvironment(gym.Env):
         observations = self._get_observation()
         ended = self.game.has_ended()
 
-        if ended and self.game.loser != 1:
-            reward = 100
-        else:
-            reward = -100
+        reward = self.game.time if self.game.has_ended() else 0
 
         return observations, reward, ended, {}
 

@@ -6,7 +6,7 @@ from default_environment import DefaultEnvironment
 if __name__ == '__main__':
     env = DefaultEnvironment()
 
-    model = PPO(ActorCriticPolicy, env, verbose=1)
-    model.learn(total_timesteps=1000000)
+    model = PPO(ActorCriticPolicy, env, verbose=1, n_steps=512)
+    model.learn(total_timesteps=20_000)
 
     env.close()

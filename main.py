@@ -1,9 +1,11 @@
+import time
 from typing import List
 
 import numpy as np
 import pygame
 
 from game import Game
+from players.human_player import HumanPlayer
 from players.random_palyer import RandomPlayer
 
 radius = 5
@@ -24,11 +26,12 @@ def as_int(pos: np.ndarray) -> List[int]:
 
 
 def main():
-    # pygame.init()
-    game = Game()
-    player = RandomPlayer(game.head1)
+    game = Game(1)
+    # player = RandomPlayer(game.heads[0])
+    player = HumanPlayer(game.heads[0], pygame.K_LEFT, pygame.K_RIGHT)
     while not game.has_ended():
-        action = player.move(game.board)
+        time.sleep(0.1)
+        action = player.move(game.board, pygame.event.get())
         game.advance(action)
 
 
