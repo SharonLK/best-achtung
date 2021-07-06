@@ -1,7 +1,11 @@
+import random
 from math import cos, pi, sin
 
 import numpy as np
 import pygame
+
+# from default_environment import Action
+from action import Action
 
 speed = 0.15
 dtheta = 0.3
@@ -40,6 +44,7 @@ class Simulator:
         self.p2_path = []
 
         self.running = True
+        self.winner = 1
         self.time = 0
 
     def choose_initial_pos(self):
@@ -96,12 +101,25 @@ class Simulator:
         else:
             return False
 
-    def step(self):
+    def step(self, action: Action):
         cycle_time = 1000
         empty_time = 200
 
         self.time += 1
         empty = self.time % cycle_time > cycle_time - empty_time
+
+        random_action = random.randint(0, 2)
+        if random_action == 0:
+            self.p1_theta += dtheta
+        elif random_action == 1:
+            self.p1_theta -= dtheta
+        else:
+            pass
+
+        if action == Action.LEFT:
+            self.p2_theta += dtheta
+        if action == Action.RIGHT:
+            self.p2_theta -= dtheta
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,16 +129,6 @@ class Simulator:
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
                     print('Quit game due to order')
-
-                if event.key == pygame.K_LEFT:
-                    self.p1_theta += dtheta
-                if event.key == pygame.K_RIGHT:
-                    self.p1_theta -= dtheta
-
-                if event.key == pygame.K_q:
-                    self.p2_theta += dtheta
-                if event.key == pygame.K_w:
-                    self.p2_theta -= dtheta
 
         if empty:
             self.draw_player(BLACK, [int(self.p1_pos[0]), int(self.p1_pos[1])], self.screen)
@@ -140,9 +148,11 @@ class Simulator:
         if self.check_border(p1_pos) or self.check_path_collision(self.p1_path, self.p2_path, p1_pos):
             print("player 1 lost")
             self.running = False
+            self.winner = 2
         elif self.check_border(p2_pos) or self.check_path_collision(self.p1_path, self.p2_path, p2_pos):
             print("player 2 lost")
             self.running = False
+            self.winner = 1
 
         if empty:
             p1_path = self.add_to_path(self.p1_path, p1_pos)
@@ -150,6 +160,9 @@ class Simulator:
 
     def has_ended(self):
         return not self.running
+
+    def get_winner(self):
+        return self.winner
 
 
 if __name__ == "__main__":

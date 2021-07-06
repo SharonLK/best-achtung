@@ -7,6 +7,6 @@ if __name__ == '__main__':
     env = DefaultEnvironment()
 
     model = PPO(ActorCriticPolicy, env, verbose=1)
-    model.learn(total_timesteps=1000)
+    model.learn(total_timesteps=50000)
 
     env.close()
