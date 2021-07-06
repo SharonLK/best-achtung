@@ -11,7 +11,7 @@ from players.fog_player import FogPlayer
 radius = 2
 path_radius = 2
 
-screen_size = (5 * 240, 5 * 180)
+screen_size = (800, 600)
 
 p1_color = (255, 255, 255)
 p2_color = (0, 255, 255)

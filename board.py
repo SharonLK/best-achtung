@@ -5,7 +5,7 @@ import numpy as np
 
 class Board:
 
-    def __init__(self, width: int = 1200, height: int = 900):
+    def __init__(self, width: int = 800, height: int = 600):
         self.width = width
         self.height = height
         self.cells = np.zeros((self.width, self.height))

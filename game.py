@@ -1,12 +1,14 @@
-from typing import Optional
+from typing import List, Optional
+
 import numpy as np
+import pygame
 
 from action import Action
 from board import Board
 from head import Head
 
-speed = 2
-dtheta = 0.1
+speed = 0.15
+dtheta = 0.3
 
 radius = 5
 path_radius = 5
@@ -14,14 +16,38 @@ path_radius = 5
 cycle_time = 1500
 empty_time = 150
 
+screen_size = (800, 600)
+
+p1_color = (255, 255, 255)
+p2_color = (0, 255, 255)
+p1_path_color = (255, 255, 0)
+p2_path_color = (255, 0, 255)
+
+BLACK = (0, 0, 0)
+
+
+def as_int(pos: np.ndarray) -> List[int]:
+    return [int(pos[0]), int(pos[1])]
+
+
+def draw_player(color, center, surface):
+    pygame.draw.circle(surface, color, center, radius)
+
+
+def draw_path(path, screen, color):
+    for point in path:
+        pygame.draw.circle(screen, color, [int(point[0]), int(point[1])], path_radius)
+
 
 class Game:
-
     def __init__(self):
 
         self.board: Optional[Board] = None
         self.head1: Optional[Head] = None
         self.head2: Optional[Head] = None
+        self.winner: Optional[int] = None
+        self.screen: Optional = None
+        self.empty: Optional[bool] = False
         self.time = 0
 
         self.reset()
@@ -68,6 +94,11 @@ class Game:
             self.head2 = Head(pos2, direction2, speed)
 
         self.ended = False
+        self.winner = None
+        self.empty = False
+
+        pygame.init()
+        self.screen = pygame.display.set_mode(screen_size)
 
     @staticmethod
     def _move_head(head: Head, action: Action) -> None:
@@ -78,31 +109,42 @@ class Game:
 
         head.step()
 
-    def advance(self, action1: Action, action2: Action) -> bool:
-
+    def advance(self, action1: Action, action2: Action) -> None:
         self.time += 1
+
+        if self.empty:
+            draw_player(BLACK, as_int(self.head1.pos), self.screen)
+            draw_player(BLACK, as_int(self.head2.pos), self.screen)
+        else:
+            draw_player(p1_path_color, as_int(self.head1.pos), self.screen)
+            draw_player(p2_path_color, as_int(self.head2.pos), self.screen)
 
         self._move_head(self.head1, action1)
         self._move_head(self.head2, action2)
 
-        empty = self.time % cycle_time > cycle_time - empty_time
+        draw_player(p1_color, as_int(self.head1.pos), self.screen)
+        draw_player(p2_color, as_int(self.head2.pos), self.screen)
+
+        pygame.display.flip()
+
+        self.empty = self.time % cycle_time > cycle_time - empty_time
 
         if not self.board.legal_pos(self.head1.pos):
             print('Player 1 has lost')
             self.ended = True
-            return empty
+            self.winner = 2
+            return
 
         if not self.board.legal_pos(self.head2.pos):
             print('Player 2 has lost')
             self.ended = True
-            return empty
+            self.winner = 1
+            return
 
-        if not empty:
+        if not self.empty:
             self.board.update_occupancy(self.head1.pos, self.head2.pos)
         else:
             self.board.update_occupancy()
-
-        return empty
 
     def has_ended(self) -> bool:
         return self.ended
