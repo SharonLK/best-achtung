@@ -17,6 +17,7 @@ p2_path_color = (255, 0, 255)
 
 BLACK = (0, 0, 0)
 
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode(screen_size)
