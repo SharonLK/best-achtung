@@ -3,7 +3,7 @@ import numpy as np
 
 from action import Action
 from game import Game
-from players.always_left_player import AlwaysLeftPlayer
+from players.fogreedy import Fogreedy
 
 
 class DefaultEnvironment(gym.Env):
@@ -15,7 +15,7 @@ class DefaultEnvironment(gym.Env):
         self.iterations = 0
 
         self.game = Game()
-        self.other_bot = AlwaysLeftPlayer(self.game.head2)
+        self.other_bot = Fogreedy(self.game.head2)
 
         self.action_space = gym.spaces.Discrete(3)  # Turn left, Turn right, Continue straight
         # self.observation_space = gym.spaces.Box(low=0, high=2, shape=(200, 200))

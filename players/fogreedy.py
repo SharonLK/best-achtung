@@ -16,7 +16,7 @@ DIRECTIONS = {'s': 0,
               'sw': 7 * np.pi / 4}
 
 
-class FogPlayer(Player):
+class Fogreedy(Player):
     def __init__(self, head):
         super().__init__(head)
         self.border_buffer = BORDERS_BUFFER

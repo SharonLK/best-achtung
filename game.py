@@ -7,7 +7,7 @@ from action import Action
 from board import Board
 from head import Head
 
-speed = 10
+speed = 3
 dtheta = 0.3
 
 radius = 5
