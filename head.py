@@ -2,7 +2,6 @@ import numpy as np
 
 
 class Head:
-
     def __init__(self, pos: np.ndarray, direction: float, speed: float):
         self.pos = pos
         self.direction = direction
@@ -21,9 +20,9 @@ class Head:
 
     def change_direction(self, change: float) -> None:
         self.direction += change
+        self.direction %= (2 * np.pi)
 
     def step(self) -> None:
-
         new_x = self.x + self.speed * np.cos(self.direction)
         new_y = self.y + self.speed * np.sin(self.direction)
 

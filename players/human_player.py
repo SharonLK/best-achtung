@@ -14,7 +14,7 @@ class HumanPlayer(Player):
         self.left_key = left_key
         self.right_key = right_key
 
-    def move(self, board: Board, keys) -> Action:
+    def move(self, board: Board, keys=None) -> Action:
         if keys[self.left_key]:
             return Action.Left
         if keys[self.right_key]:

@@ -6,7 +6,7 @@ import numpy as np
 from game import Game
 from players.human_player import HumanPlayer
 from players.random_player import RandomPlayer
-from players.fog_player import FogPlayer
+from players.fogreedy import FogPlayer
 
 radius = 3
 path_radius = 3
@@ -35,7 +35,7 @@ def main():
     screen = pygame.display.set_mode(screen_size)
 
     player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
-    player2 = HumanPlayer(game.head2, pygame.K_a, pygame.K_s)
+    player2 = FogPlayer(game.head2)
     # player1 = RandomPlayer(game.head1)
     # player2 = RandomPlayer(game.head2)
     empty = False
