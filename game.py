@@ -7,21 +7,19 @@ from action import Action
 from board import Board
 from head import Head
 
-speed = 10
+speed = 1
 dtheta = 0.3
 
 radius = 5
 path_radius = 5
 
-cycle_time = 1500
-empty_time = 150
+cycle_time = 120
+empty_time = 20
 
 screen_size = (800, 600)
 
-p1_color = (255, 255, 255)
-p2_color = (0, 255, 255)
-p1_path_color = (255, 255, 0)
-p2_path_color = (255, 0, 255)
+marker_colors = [(255, 255, 255), (0, 255, 255)]
+path_colors = [(255, 255, 0), (255, 0, 255)]
 
 BLACK = (0, 0, 0)
 
@@ -40,12 +38,15 @@ def draw_path(path, screen, color):
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, n: int):
+
+        self.n = n
+        self.marker_colors = marker_colors[:self.n]
+        self.path_colors = path_colors[:self.n]
 
         self.board: Optional[Board] = None
-        self.head1: Optional[Head] = None
-        self.head2: Optional[Head] = None
-        self.winner: Optional[int] = None
+        self.heads: Optional[List[Head]] = None
+        self.loser: Optional[int] = None
         self.screen: Optional = None
         self.empty: Optional[bool] = False
         self.time = 0
@@ -76,25 +77,15 @@ class Game:
 
         self.board = Board()
 
-        pos1 = self._choose_initial_pos()
-        direction1 = self._choose_initial_angle(pos1)
-        self.head1 = Head(pos1, direction1, speed)
-
-        pos2 = self._choose_initial_pos()
-        direction2 = self._choose_initial_angle(pos1)
-        self.head2 = Head(pos2, direction2, speed)
-
-        while self.head1.distance(self.head2) < 100:
-            pos1 = self._choose_initial_pos()
-            direction1 = self._choose_initial_angle(pos1)
-            self.head1 = Head(pos1, direction1, speed)
-
-            pos2 = self._choose_initial_pos()
-            direction2 = self._choose_initial_angle(pos1)
-            self.head2 = Head(pos2, direction2, speed)
+        self.heads = []
+        for _ in range(self.n):
+            pos = self._choose_initial_pos()
+            direction = self._choose_initial_angle(pos)
+            head = Head(pos, direction, speed)
+            self.heads.append(head)
 
         self.ended = False
-        self.winner = None
+        self.loser = None
         self.empty = False
 
         pygame.init()
@@ -109,40 +100,38 @@ class Game:
 
         head.step()
 
-    def advance(self, action1: Action, action2: Action) -> None:
+    def advance(self, action1: Action) -> None:
         self.time += 1
 
-        if self.empty:
-            draw_player(BLACK, as_int(self.head1.pos), self.screen)
-            draw_player(BLACK, as_int(self.head2.pos), self.screen)
-        else:
-            draw_player(p1_path_color, as_int(self.head1.pos), self.screen)
-            draw_player(p2_path_color, as_int(self.head2.pos), self.screen)
+        for head, color in zip(self.heads, self.path_colors):
+            if self.empty:
+                draw_player(BLACK, as_int(head.pos), self.screen)
+            else:
+                draw_player(color, as_int(head.pos), self.screen)
 
-        self._move_head(self.head1, action1)
-        self._move_head(self.head2, action2)
-
-        draw_player(p1_color, as_int(self.head1.pos), self.screen)
-        draw_player(p2_color, as_int(self.head2.pos), self.screen)
+        for head, color in zip(self.heads, self.marker_colors):
+            self._move_head(head, action1)
+            draw_player(color, as_int(head.pos), self.screen)
 
         pygame.display.flip()
 
         self.empty = self.time % cycle_time > cycle_time - empty_time
 
-        if not self.board.legal_pos(self.head1.pos):
-            print('Player 1 has lost')
-            self.ended = True
-            self.winner = 2
-            return
+        for idx, head in enumerate(self.heads):
+            if not self.board.legal_pos(head.pos):
+                print(f'Player {idx} has lost')
+                self.ended = True
+                self.loser = idx
+                return
 
-        if not self.board.legal_pos(self.head2.pos):
-            print('Player 2 has lost')
+        if self.time == 50_000:
+            print('Game has ended after time limit')
             self.ended = True
-            self.winner = 1
+            self.loser = -1
             return
 
         if not self.empty:
-            self.board.update_occupancy(self.head1.pos, self.head2.pos)
+            self.board.update_occupancy([head.pos for head in self.heads])
         else:
             self.board.update_occupancy()
 

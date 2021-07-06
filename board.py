@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import numpy as np
 
@@ -10,18 +10,18 @@ class Board:
         self.height = height
         self.cells = np.zeros((self.width, self.height))
 
-        self.occupancy = {idx: [] for idx in range(10)}
+        self.occupancy = {idx: [] for idx in range(3)}
 
-    def update_occupancy(self, pos1: Optional[np.ndarray] = None, pos2: Optional[np.ndarray] = None) -> None:
+    def update_occupancy(self, pos_lst: List[np.ndarray] = None) -> None:
         for pos in self.occupancy[0]:
             self.cells[int(pos[0]), int(pos[1])] = 1
 
-        for idx in range(1, 10):
+        for idx in range(1, 3):
             self.occupancy[idx-1] = self.occupancy[idx]
             self.occupancy[idx] = []
 
-        if pos1 is not None:
-            self.occupancy[9] = [pos1, pos2]
+        if pos_lst is not None:
+            self.occupancy[2] = pos_lst
 
     def _border_collision(self, pos: np.ndarray) -> bool:
         if pos[0] >= self.width or pos[0] < 0:

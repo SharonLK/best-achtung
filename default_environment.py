@@ -4,7 +4,6 @@ import pygame
 
 from action import Action
 from game import Game
-from players.random_palyer import RandomPlayer
 
 
 class DefaultEnvironment(gym.Env):
@@ -13,8 +12,7 @@ class DefaultEnvironment(gym.Env):
     def __init__(self) -> None:
         super().__init__()
 
-        self.game = Game()
-        self.other_bot = RandomPlayer(self.game.head2)
+        self.game = Game(1)
 
         self.action_space = gym.spaces.Discrete(3)  # Turn left, Turn right, Continue straight
         self.observation_space = gym.spaces.Box(low=0, high=1, shape=(800, 600))
@@ -30,16 +28,14 @@ class DefaultEnvironment(gym.Env):
         else:
             action = Action.Stand
 
-        reward = 1
-
-        self.game.advance(action, self.other_bot.move(self.game.board))
+        self.game.advance(action)
 
         observations = self._get_observation()
         ended = self.game.has_ended()
 
-        if ended and self.game.winner == 2:
+        if ended and self.game.loser != 1:
             reward = 100
-        elif ended and self.game.winner == 1:
+        else:
             reward = -100
 
         return observations, reward, ended, {}
