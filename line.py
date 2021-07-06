@@ -36,28 +36,24 @@ def choose_initial_angle(pos):
     return angle + pi * np.random.uniform(low=-0.25, high=0.25)
 
 
+def distance(pos1, pos2):
+    return np.sqrt((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2)
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode(screen_size)
 
     running = True
 
-    empty_path_change = 0.0005
-
-    empty_time_max = 150
-    empty_time_min = 150
-
-    p1_timeout = 0
-    p2_timeout = 0
-
-    p1_time_limit = 0
-    p2_time_limit = 0
-
-    p1_draw_empty = False
-    p2_draw_empty = False
+    cycle_time = 1000
+    empty_time = 200
 
     p1_pos = choose_initial_pos()
     p2_pos = choose_initial_pos()
+    while distance(p1_pos, p2_pos) < 250:
+        p1_pos = choose_initial_pos()
+        p2_pos = choose_initial_pos()
 
     p1_theta = choose_initial_angle(p1_pos)
     p2_theta = choose_initial_angle(p2_pos)
@@ -70,6 +66,7 @@ def main():
     while running:
 
         time += 1
+        empty = time % cycle_time > cycle_time - empty_time
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,33 +87,11 @@ def main():
                 if event.key == pygame.K_w:
                     p2_theta -= dtheta
 
-        if time % 2000 == 0:
-            draw_empty = True
-
-        if random.random() < empty_path_change and not p1_draw_empty:
-            p1_draw_empty = True
-            p1_time_limit = random.randint(empty_time_min, empty_time_max)
-            p1_timeout = 0
-
-        if random.random() < empty_path_change and not p2_draw_empty:
-            p2_draw_empty = True
-            p2_time_limit = random.randint(empty_time_min, empty_time_max)
-            p2_timeout = 0
-
-        if p1_draw_empty and p1_timeout <= p1_timeout:
+        if empty:
             draw_player(BLACK, [int(p1_pos[0]), int(p1_pos[1])], screen)
-            p1_timeout += 1
-            if p1_timeout > p1_time_limit:
-                p1_draw_empty = False
+            draw_player(BLACK, [int(p2_pos[0]), int(p2_pos[1])], screen)
         else:
             draw_player(p1_path_color, [int(p1_pos[0]), int(p1_pos[1])], screen)
-
-        if p2_draw_empty and p2_timeout <= p2_timeout:
-            draw_player(BLACK, [int(p2_pos[0]), int(p2_pos[1])], screen)
-            p2_timeout += 1
-            if p2_timeout > p2_time_limit:
-                p2_draw_empty = False
-        else:
             draw_player(p2_path_color, [int(p2_pos[0]), int(p2_pos[1])], screen)
 
         p1_pos = update_pos(p1_theta, p1_pos)
@@ -133,9 +108,9 @@ def main():
         elif check_border(p2_pos) or check_path_collision(p1_path, p2_path, p2_pos):
             print("player 2 lost")
             running = False
-        if not p1_draw_empty:
+
+        if empty:
             p1_path = add_to_path(p1_path, p1_pos)
-        if not p2_draw_empty:
             p2_path = add_to_path(p2_path, p2_pos)
 
 
