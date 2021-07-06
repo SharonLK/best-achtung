@@ -31,9 +31,10 @@ def main():
 
     screen = pygame.display.set_mode(screen_size)
 
-    player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
-    player2 = HumanPlayer(game.head1, pygame.K_q, pygame.K_w)
-    # player2 = RandomPlayer(game.head2)
+    # player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
+    # player2 = HumanPlayer(game.head1, pygame.K_q, pygame.K_w)
+    player1 = RandomPlayer(game.head1)
+    player2 = RandomPlayer(game.head2)
     empty = False
 
     while not game.has_ended():
@@ -41,7 +42,8 @@ def main():
         events = pygame.event.get()
 
         for event in events:
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                print('game stopped by user request')
                 game.end()
 
         action1 = player1.move(game.board, events)
