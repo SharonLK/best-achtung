@@ -7,7 +7,7 @@ from action import Action
 from board import Board
 from head import Head
 
-speed = 3
+speed = 10
 dtheta = 0.3
 
 radius = 5
@@ -18,10 +18,8 @@ empty_time = 150
 
 screen_size = (800, 600)
 
-p1_color = (255, 255, 255)
-p2_color = (0, 255, 255)
-p1_path_color = (255, 255, 0)
-p2_path_color = (255, 0, 255)
+marker_colors = [(255, 255, 255), (0, 255, 255)]
+path_colors = [(255, 255, 0), (255, 0, 255)]
 
 BLACK = (0, 0, 0)
 
@@ -40,29 +38,21 @@ def draw_path(path, screen, color):
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, n: int):
+
+        self.n = n
+        self.marker_colors = marker_colors[:self.n]
+        self.path_colors = path_colors[:self.n]
 
         self.board: Optional[Board] = None
-        self.head1: Optional[Head] = None
-        self.head2: Optional[Head] = None
-        self.winner: Optional[int] = None
+        self.heads: Optional[List[Head]] = None
         self.screen: Optional = None
         self.empty: Optional[bool] = False
         self.time = 0
 
-        self.surface = np.full(screen_size, 0, dtype=np.int8)
-
         self.reset()
 
         self.ended = False
-
-    @property
-    def width(self):
-        return screen_size[0]
-
-    @property
-    def height(self):
-        return screen_size[1]
 
     def _choose_initial_pos(self):
         return (np.random.uniform(low=0.25, high=0.75, size=2) * np.array(
@@ -80,32 +70,18 @@ class Game:
 
         return angle + np.pi * np.random.uniform(low=-0.25, high=0.25)
 
-    def get_surface(self):
-        return self.surface
-
     def reset(self) -> None:
 
         self.time = 0
 
         self.board = Board()
-        self.surface = np.full(screen_size, 0, dtype=np.int8)
 
-        pos1 = self._choose_initial_pos()
-        direction1 = self._choose_initial_angle(pos1)
-        self.head1 = Head(pos1, direction1, speed)
-
-        pos2 = self._choose_initial_pos()
-        direction2 = self._choose_initial_angle(pos1)
-        self.head2 = Head(pos2, direction2, speed)
-
-        while self.head1.distance(self.head2) < 100:
-            pos1 = self._choose_initial_pos()
-            direction1 = self._choose_initial_angle(pos1)
-            self.head1 = Head(pos1, direction1, speed)
-
-            pos2 = self._choose_initial_pos()
-            direction2 = self._choose_initial_angle(pos1)
-            self.head2 = Head(pos2, direction2, speed)
+        self.heads = []
+        for _ in range(self.n):
+            pos = self._choose_initial_pos()
+            direction = self._choose_initial_angle(pos)
+            head = Head(pos, direction, speed)
+            self.heads.append(head)
 
         self.ended = False
         self.winner = None
@@ -115,64 +91,40 @@ class Game:
         self.screen = pygame.display.set_mode(screen_size)
 
     @staticmethod
-    def _move_head(head: Head, action: Action) -> None:
+    def _move_head(head: Head, action: Action) -> List[np.ndarray]:
         if action == Action.Right:
             head.change_direction(-dtheta)
         elif action == Action.Left:
             head.change_direction(dtheta)
 
-        head.step()
+        return head.step()
 
-    def _draw_player(self, color: float, position: np.ndarray) -> None:
-        if position[0] < 0 or position[0] > screen_size[0] or position[1] < 0 or position[1] > screen_size[1]:
-            return
-
-        x = int(position[0])
-        y = int(position[1])
-        self.surface[x - 9:x + 9, y - 9:y + 9] = color
-
-        # self.surface[int(position[0]), int(position[1])] = 1
-
-    def advance(self, action1: Action, action2: Action) -> None:
+    def advance(self, action1: Action) -> None:
         self.time += 1
 
-        if self.empty:
-            self._draw_player(0, self.head1.pos)
-            self._draw_player(0, self.head2.pos)
-        else:
-            self._draw_player(1, self.head1.pos)
-            self._draw_player(2, self.head2.pos)
+        for head, color in zip(self.heads, self.path_colors):
+            if self.empty:
+                draw_player(BLACK, as_int(head.pos), self.screen)
+            else:
+                draw_player(color, as_int(head.pos), self.screen)
 
-        self._move_head(self.head1, action1)
-        self._move_head(self.head2, action2)
+        visited = []
+        for head, color in zip(self.heads, self.marker_colors):
+            visited += self._move_head(head, action1)
+            draw_player(color, as_int(head.pos), self.screen)
 
-        self._draw_player(1, self.head1.pos)
-        self._draw_player(2, self.head2.pos)
-
-        image = np.zeros((screen_size[0], screen_size[1], 3))
-        image[self.surface == 1, :] = (255, 255, 255)
-        image[self.surface == 2, :] = (0, 0, 0)
-
-        self.screen.blit(pygame.surfarray.make_surface(image), (0, 0))
-        # self.screen.blit(pygame.surfarray.make_surface(np.ones(screen_size, dtype=np.int8)), (0, 0))
-        pygame.display.update()
+        pygame.display.flip()
 
         self.empty = self.time % cycle_time > cycle_time - empty_time
 
-        if not self.board.legal_pos(self.head1.pos):
-            # print('Player 1 has lost')
-            self.ended = True
-            self.winner = 2
-            return
-
-        # if not self.board.legal_pos(self.head2.pos):
-        #     # print('Player 2 has lost')
-        #     self.ended = True
-        #     self.winner = 1
-        #     return
+        for pos in visited:
+            if not self.board.legal_pos(pos):
+                print(f'Survived for {self.time} turns')
+                self.ended = True
+                return
 
         if not self.empty:
-            self.board.update_occupancy(self.head1.pos, self.head2.pos)
+            self.board.update_occupancy(visited)
         else:
             self.board.update_occupancy()
 

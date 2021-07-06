@@ -16,20 +16,3 @@ if __name__ == '__main__':
                 print("Episode finished after {} timesteps".format(t+1))
                 break
     env.close()
-
-
-# if __name__ == '__main__':
-#     env = DefaultEnvironment()
-#
-#     model = PPO(ActorCriticPolicy, env, verbose=2)#
-#     model.learn(total_timesteps=100000)
-#
-#     # obs = env.reset()
-#     # for i in range(1000):
-#     #     action, _states = model.predict(obs, deterministic=True)
-#     #     obs, reward, done, info = env.step(action)
-#     #     print(reward)
-#     #     if done:
-#     #         obs = env.reset()
-#
-#     env.close()

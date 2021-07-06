@@ -1,15 +1,14 @@
 from typing import List
 
-import pygame
 import numpy as np
+import pygame
 
 from game import Game
 from players.human_player import HumanPlayer
-from players.random_player import RandomPlayer
-from players.fogreedy import Fogreedy
+from players.random_palyer import RandomPlayer
 
-radius = 3
-path_radius = 3
+radius = 5
+path_radius = 5
 
 screen_size = (800, 600)
 
@@ -19,8 +18,6 @@ p1_path_color = (255, 255, 0)
 p2_path_color = (255, 0, 255)
 
 BLACK = (0, 0, 0)
-
-clock = pygame.time.Clock()
 
 
 def as_int(pos: np.ndarray) -> List[int]:
@@ -40,21 +37,13 @@ def main():
     # player2 = RandomPlayer(game.head2)
     empty = False
 
+    game = Game(1)
+    # player = RandomPlayer(game.heads[0])
+    player = HumanPlayer(game.heads[0], pygame.K_LEFT, pygame.K_RIGHT)
     while not game.has_ended():
-        clock.tick(60)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                print('game stopped by user request')
-                game.end()
-
-        keys = pygame.key.get_pressed()
-
-        action1 = player1.move(game.board, keys)
-        action2 = player2.move(game.board, keys)
-
-        prev_pos1 = game.head1.pos
-        prev_pos2 = game.head2.pos
+        time.sleep(0.1)
+        action = player.move(game.board, pygame.event.get())
+        game.advance(action)
 
         if empty:
             draw_player(BLACK, as_int(prev_pos1), screen)
@@ -63,12 +52,42 @@ def main():
             draw_player(p1_path_color, as_int(prev_pos2), screen)
             draw_player(p2_path_color, as_int(prev_pos2), screen)
 
-        empty = game.advance(action1, action2)
-
-        draw_player(p1_color, as_int(game.head1.pos), screen)
-        draw_player(p2_color, as_int(game.head2.pos), screen)
-
-        pygame.display.flip()
+    # screen = pygame.display.set_mode(screen_size)
+    #
+    # # player1 = HumanPlayer(game.head1, pygame.K_LEFT, pygame.K_RIGHT)
+    # # player2 = HumanPlayer(game.head1, pygame.K_q, pygame.K_w)
+    # player1 = RandomPlayer(game.head1)
+    # player2 = RandomPlayer(game.head2)
+    # empty = False
+    #
+    # while not game.has_ended():
+    #
+    #     events = pygame.event.get()
+    #
+    #     for event in events:
+    #         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+    #             print('game stopped by user request')
+    #             game.end()
+    #
+    #     action1 = player1.move(game.board, events)
+    #     action2 = player2.move(game.board, events)
+    #
+    #     prev_pos1 = game.head1.pos
+    #     prev_pos2 = game.head2.pos
+    #
+    #     if empty:
+    #         draw_player(BLACK, as_int(prev_pos1), screen)
+    #         draw_player(BLACK, as_int(prev_pos2), screen)
+    #     else:
+    #         draw_player(p1_path_color, as_int(prev_pos2), screen)
+    #         draw_player(p2_path_color, as_int(prev_pos2), screen)
+    #
+    #     empty = game.advance(action1, action2)
+    #
+    #     draw_player(p1_color, as_int(game.head1.pos), screen)
+    #     draw_player(p2_color, as_int(game.head2.pos), screen)
+    #
+    #     pygame.display.flip()
 
 
 def draw_player(color, center, surface):
