@@ -1,8 +1,9 @@
 import pygame
 from math import sin, cos, pi
 import random
+import numpy as np
 
-speed = 0.45
+speed = 0.15
 dtheta = 0.3
 
 radius = 5
@@ -18,6 +19,23 @@ p2_path_color = (255, 0, 255)
 BLACK = (0, 0, 0)
 
 
+def choose_initial_pos():
+    return np.random.uniform(low=0.25, high=0.75, size=2) * np.array(screen_size)
+
+
+def choose_initial_angle(pos):
+    if pos[0] < screen_size[0] / 2 and pos[1] < screen_size[1] / 2:
+        angle = 0.25 * pi
+    elif pos[0] < screen_size[0] / 2 and pos[1] > screen_size[1] / 2:
+        angle = 0.75 * pi
+    elif pos[0] > screen_size[0] / 2 and pos[1] > screen_size[1] / 2:
+        angle = 1.25 * pi
+    else:
+        angle = 1.75 * pi
+
+    return angle + pi * np.random.uniform(low=-0.25, high=0.25)
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode(screen_size)
@@ -26,8 +44,8 @@ def main():
 
     empty_path_change = 0.0005
 
-    empty_time_max = int(50 / speed)
-    empty_time_min = int(empty_time_max / 4.)
+    empty_time_max = 150
+    empty_time_min = 150
 
     p1_timeout = 0
     p2_timeout = 0
@@ -38,23 +56,30 @@ def main():
     p1_draw_empty = False
     p2_draw_empty = False
 
-    p1_pos = [random.randint(10, screen_size[0]), random.randint(10, screen_size[1])]  # [32,32]
-    p2_pos = [random.randint(10, screen_size[0]), random.randint(10, screen_size[1])]  # [64,64]
+    p1_pos = choose_initial_pos()
+    p2_pos = choose_initial_pos()
 
-    p1_theta = choose_angle(p1_pos)  # 2*pi*random.random()
-    p2_theta = choose_angle(p2_pos)  # 2*pi*random.random()
+    p1_theta = choose_initial_angle(p1_pos)
+    p2_theta = choose_initial_angle(p2_pos)
 
     p1_path = []
     p2_path = []
 
+    time = 0
+
     while running:
-        # screen.fill((0,0,0))
+
+        time += 1
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    print('Quit game due to order')
+
                 if event.key == pygame.K_LEFT:
                     p1_theta += dtheta
                 if event.key == pygame.K_RIGHT:
@@ -65,18 +90,8 @@ def main():
                 if event.key == pygame.K_w:
                     p2_theta -= dtheta
 
-        """
-        keys_pressed = pygame.key.get_pressed()
-
-        if keys_pressed[pygame.K_LEFT]:
-            p1_theta += dtheta
-        elif keys_pressed[pygame.K_RIGHT]:
-            p1_theta -= dtheta
-        if keys_pressed[pygame.K_q]:
-            p2_theta += dtheta
-        elif keys_pressed[pygame.K_w]:
-            p2_theta -= dtheta
-        """
+        if time % 2000 == 0:
+            draw_empty = True
 
         if random.random() < empty_path_change and not p1_draw_empty:
             p1_draw_empty = True
@@ -110,7 +125,6 @@ def main():
         draw_player(p1_color, [int(p1_pos[0]), int(p1_pos[1])], screen)
         draw_player(p2_color, [int(p2_pos[0]), int(p2_pos[1])], screen)
 
-        # pygame.display.update()
         pygame.display.flip()
 
         if check_border(p1_pos) or check_path_collision(p1_path, p2_path, p1_pos):
@@ -165,21 +179,6 @@ def check_path_collision(path1, path2, pos):
         return True
     else:
         return False
-
-
-def choose_angle(pos):
-    angle = 0
-    factor = 0.5 * (-.5 + random.random())
-    if pos[0] < screen_size[0] / 2. and pos[1] < screen_size[1] / 2.:
-        angle = 0.25 * pi + factor
-    elif pos[0] < screen_size[0] / 2. and pos[1] > screen_size[1] / 2.:
-        angle = 0.75 * pi + factor
-    elif pos[0] > screen_size[0] / 2. and pos[1] > screen_size[1] / 2.:
-        angle = 1.25 * pi + factor
-    elif pos[0] > screen_size[0] / 2. and pos[1] < screen_size[1] / 2.:
-        angle = 1.75 * pi + factor
-
-    return angle
 
 
 if __name__ == "__main__":
