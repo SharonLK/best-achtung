@@ -1,17 +1,15 @@
 from typing import List
 
-import pygame
 import numpy as np
+import pygame
 
 from game import Game
-from players.human_player import HumanPlayer
 from players.random_palyer import RandomPlayer
-
 
 radius = 5
 path_radius = 5
 
-screen_size = (5 * 240, 5 * 180)
+screen_size = (800, 600)
 
 p1_color = (255, 255, 255)
 p2_color = (0, 255, 255)
