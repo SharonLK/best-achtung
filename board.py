@@ -17,22 +17,31 @@ class Board:
             self.cells[int(pos[0]), int(pos[1])] = 1
 
         for idx in range(1, 10):
-            self.occupancy[idx-1] = self.occupancy[idx]
+            self.occupancy[idx - 1] = self.occupancy[idx]
             self.occupancy[idx] = []
 
         if pos1 is not None:
             self.occupancy[9] = [pos1, pos2]
 
     def _border_collision(self, pos: np.ndarray) -> bool:
-        if pos[0] >= self.width or pos[0] < 0:
+        if pos[0] > self.width - 1 or pos[0] < 1:
             return True
-        elif pos[1] >= self.height or pos[1] < 0:
+        elif pos[1] > self.height - 1 or pos[1] < 1:
             return True
         else:
             return False
 
     def _path_collision(self, pos: np.ndarray) -> bool:
-        return self.cells[int(pos[0]), int(pos[1])] == 1
+        collide = self.cells[int(pos[0]), int(pos[1])] \
+                  or self.cells[int(pos[0]) - 1, int(pos[1])] \
+                  or self.cells[int(pos[0]) + 1, int(pos[1])] \
+                  or self.cells[int(pos[0]), int(pos[1]) + 1] \
+                  or self.cells[int(pos[0]), int(pos[1]) - 1] \
+                  or self.cells[int(pos[0]) - 1, int(pos[1]) - 1] \
+                  or self.cells[int(pos[0]) + 1, int(pos[1]) + 1] \
+                  or self.cells[int(pos[0]) - 1, int(pos[1]) + 1] \
+                  or self.cells[int(pos[0]) + 1, int(pos[1]) - 1]
+        return bool(collide)
 
     def legal_pos(self, pos: np.ndarray) -> bool:
         return not self._border_collision(pos) and not self._path_collision(pos)

@@ -11,5 +11,5 @@ class Player(ABC):
         self.head = head
 
     @abstractmethod
-    def move(self, board: Board, event=None) -> Action:
+    def move(self, board: Board, keys=None) -> Action:
         pass

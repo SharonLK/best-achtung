@@ -20,10 +20,3 @@ class HumanPlayer(Player):
         if keys[self.right_key]:
             return Action.Right
         return Action.Stand
-
-        # for event in events:
-        #     if event.type == pygame.KEYDOWN:
-        #         if event.key == self.left_key:
-        #             return Action.Left
-        #         if event.key == self.right_key:
-        #             return Action.Right

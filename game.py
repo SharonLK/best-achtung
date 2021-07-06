@@ -7,11 +7,11 @@ from action import Action
 from board import Board
 from head import Head
 
-speed = 0.15
-dtheta = 0.3
+speed = 2.5
+dtheta = 0.1
 
-radius = 5
-path_radius = 5
+radius = 3
+path_radius = 3
 
 cycle_time = 1500
 empty_time = 150

@@ -8,8 +8,8 @@ from players.human_player import HumanPlayer
 from players.random_player import RandomPlayer
 from players.fog_player import FogPlayer
 
-radius = 2
-path_radius = 2
+radius = 3
+path_radius = 3
 
 screen_size = (800, 600)
 
@@ -81,7 +81,7 @@ def draw_path(path, screen, color):
 
 
 def play_music():
-    file = 'harry_potter.mp3'
+    file = 'zot_ani.mp3'
     pygame.init()
     pygame.mixer.init()
     pygame.mixer.music.load(file)

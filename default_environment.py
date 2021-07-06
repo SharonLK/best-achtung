@@ -4,7 +4,7 @@ import pygame
 
 from action import Action
 from game import Game
-from players.random_palyer import RandomPlayer
+from players.random_player import RandomPlayer
 
 
 class DefaultEnvironment(gym.Env):
@@ -32,7 +32,7 @@ class DefaultEnvironment(gym.Env):
 
         reward = 1
 
-        self.game.advance(action, self.other_bot.move(self.game.board))
+        self.game.advance(action, self.other_bot.move(self.game.board, keys=None))
 
         observations = self._get_observation()
         ended = self.game.has_ended()
