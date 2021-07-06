@@ -1,6 +1,5 @@
 import pygame
 from math import sin, cos, pi
-import random
 import numpy as np
 
 speed = 0.15
