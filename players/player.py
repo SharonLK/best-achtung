@@ -6,7 +6,6 @@ from head import Head
 
 
 class Player(ABC):
-
     def __init__(self, head: Head):
         self.head = head
 

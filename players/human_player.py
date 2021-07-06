@@ -1,5 +1,3 @@
-import pygame
-
 from action import Action
 from board import Board
 from head import Head
@@ -7,7 +5,6 @@ from players.player import Player
 
 
 class HumanPlayer(Player):
-
     def __init__(self, head: Head, left_key, right_key):
         super().__init__(head)
 

@@ -2,26 +2,11 @@ from typing import List, Optional
 
 import numpy as np
 import pygame
+from constants import *
 
 from action import Action
 from board import Board
 from head import Head
-
-speed = 10
-dtheta = 0.3
-
-radius = 5
-path_radius = 5
-
-cycle_time = 1500
-empty_time = 150
-
-screen_size = (800, 600)
-
-marker_colors = [(255, 255, 255), (0, 255, 255)]
-path_colors = [(255, 255, 0), (255, 0, 255)]
-
-BLACK = (0, 0, 0)
 
 
 def as_int(pos: np.ndarray) -> List[int]:
@@ -29,23 +14,21 @@ def as_int(pos: np.ndarray) -> List[int]:
 
 
 def draw_player(color, center, surface):
-    pygame.draw.circle(surface, color, center, radius)
+    pygame.draw.circle(surface, color, center, RADIUS)
 
 
 def draw_path(path, screen, color):
     for point in path:
-        pygame.draw.circle(screen, color, [int(point[0]), int(point[1])], path_radius)
+        pygame.draw.circle(screen, color, [int(point[0]), int(point[1])], PATH_RADIUS)
 
 
 class Game:
-    def __init__(self, n: int):
-
-        self.n = n
-        self.marker_colors = marker_colors[:self.n]
-        self.path_colors = path_colors[:self.n]
+    def __init__(self):
 
         self.board: Optional[Board] = None
-        self.heads: Optional[List[Head]] = None
+        self.head1: Optional[Head] = None
+        self.head2: Optional[Head] = None
+        self.winner: Optional[int] = None
         self.screen: Optional = None
         self.empty: Optional[bool] = False
         self.time = 0
@@ -76,12 +59,22 @@ class Game:
 
         self.board = Board()
 
-        self.heads = []
-        for _ in range(self.n):
-            pos = self._choose_initial_pos()
-            direction = self._choose_initial_angle(pos)
-            head = Head(pos, direction, speed)
-            self.heads.append(head)
+        pos1 = self._choose_initial_pos()
+        direction1 = self._choose_initial_angle(pos1)
+        self.head1 = Head(pos1, direction1, SPEED)
+
+        pos2 = self._choose_initial_pos()
+        direction2 = self._choose_initial_angle(pos1)
+        self.head2 = Head(pos2, direction2, SPEED)
+
+        while self.head1.distance(self.head2) < 100:
+            pos1 = self._choose_initial_pos()
+            direction1 = self._choose_initial_angle(pos1)
+            self.head1 = Head(pos1, direction1, SPEED)
+
+            pos2 = self._choose_initial_pos()
+            direction2 = self._choose_initial_angle(pos1)
+            self.head2 = Head(pos2, direction2, SPEED)
 
         self.ended = False
         self.winner = None
@@ -91,40 +84,48 @@ class Game:
         self.screen = pygame.display.set_mode(screen_size)
 
     @staticmethod
-    def _move_head(head: Head, action: Action) -> List[np.ndarray]:
+    def _move_head(head: Head, action: Action) -> None:
         if action == Action.Right:
-            head.change_direction(-dtheta)
+            head.change_direction(-DTHETA)
         elif action == Action.Left:
-            head.change_direction(dtheta)
+            head.change_direction(DTHETA)
 
-        return head.step()
+        head.step()
 
-    def advance(self, action1: Action) -> None:
+    def advance(self, action1: Action, action2: Action) -> None:
         self.time += 1
 
-        for head, color in zip(self.heads, self.path_colors):
-            if self.empty:
-                draw_player(BLACK, as_int(head.pos), self.screen)
-            else:
-                draw_player(color, as_int(head.pos), self.screen)
+        if self.empty:
+            draw_player(BLACK, as_int(self.head1.pos), self.screen)
+            draw_player(BLACK, as_int(self.head2.pos), self.screen)
+        else:
+            draw_player(p1_path_color, as_int(self.head1.pos), self.screen)
+            draw_player(p2_path_color, as_int(self.head2.pos), self.screen)
 
-        visited = []
-        for head, color in zip(self.heads, self.marker_colors):
-            visited += self._move_head(head, action1)
-            draw_player(color, as_int(head.pos), self.screen)
+        self._move_head(self.head1, action1)
+        self._move_head(self.head2, action2)
+
+        draw_player(p1_color, as_int(self.head1.pos), self.screen)
+        draw_player(p2_color, as_int(self.head2.pos), self.screen)
 
         pygame.display.flip()
 
         self.empty = self.time % cycle_time > cycle_time - empty_time
 
-        for pos in visited:
-            if not self.board.legal_pos(pos):
-                print(f'Survived for {self.time} turns')
-                self.ended = True
-                return
+        if not self.board.legal_pos(self.head1.pos):
+            print('Player 1 has lost')
+            self.ended = True
+            self.winner = 2
+            return
+
+        if not self.board.legal_pos(self.head2.pos):
+            print('Player 2 has lost')
+            self.ended = True
+            self.winner = 1
+            return
 
         if not self.empty:
-            self.board.update_occupancy(visited)
+            self.board.update_occupancy(self.head1.pos, self.head2.pos)
         else:
             self.board.update_occupancy()
 
