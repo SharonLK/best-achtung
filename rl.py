@@ -7,7 +7,9 @@ if __name__ == '__main__':
     env = DefaultEnvironment()
 
     model = PPO(ActorCriticPolicy, env, verbose=2)#, n_steps=512)
-    model.learn(total_timesteps=100000)
+    model.learn(total_timesteps=20000000)
+
+    model.save('sharon')
 
     # obs = env.reset()
     # for i in range(1000):
